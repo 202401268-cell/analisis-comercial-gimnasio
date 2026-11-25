@@ -1,0 +1,38 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.15.0/schema.json",
+  "name": "6446a01d6a38fcda5f14",
+  "position": {
+    "x": 797.36842105263156,
+    "y": 150,
+    "z": 11000,
+    "height": 81.578947368421055,
+    "width": 1163.1578947368421,
+    "tabOrder": 10000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Desempeño de membresías, servicios, clientes y sedes",
+                    "textStyle": {
+                      "fontStyle": "italic",
+                      "fontSize": "28pt"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "center"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

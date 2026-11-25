@@ -1,0 +1,40 @@
+table 'public sedes'
+	lineageTag: 85156bca-1607-4393-8e5f-3a3356a7e2b2
+
+	column 'Sede ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: e6745d0a-ff34-4904-bf3e-3fb30b54e9a9
+		summarizeBy: none
+		sourceColumn: Sede ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column Nombre
+		dataType: string
+		lineageTag: a633ec9e-436e-4b18-b848-afcceb4cd3ed
+		summarizeBy: none
+		sourceColumn: Nombre
+
+		annotation SummarizationSetBy = Automatic
+
+	column Ciudad
+		dataType: string
+		lineageTag: c424231e-11bb-46b3-95e2-a02ac741b49c
+		summarizeBy: none
+		sourceColumn: Ciudad
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'public sedes' = m
+		mode: import
+		source =
+				let
+				  Origen = PostgreSQL.Database("ep-floral-sky-bece9d9r-pooler.c-9.us-east-2.aws.neon.tech", "gimnasio"),
+				  #"Navegación 1" = Origen{[Schema = "public", Item = "sedes"]}[Data],
+				  #"Columnas con nombre cambiado" = Table.RenameColumns(#"Navegación 1", {{"sede_id", "Sede ID"}, {"nombre", "Nombre"}, {"ciudad", "Ciudad"}})
+				in
+				  #"Columnas con nombre cambiado"
+
+	annotation PBI_ResultType = Table
+

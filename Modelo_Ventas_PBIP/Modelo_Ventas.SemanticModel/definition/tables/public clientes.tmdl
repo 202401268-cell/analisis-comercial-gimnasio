@@ -1,0 +1,60 @@
+table 'public clientes'
+	lineageTag: 38969e72-99a8-428b-9e7e-e328ffa5b387
+
+	column 'Cliente ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: 753b40af-8011-4ec0-bc70-8a7db1706583
+		summarizeBy: none
+		sourceColumn: Cliente ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column Nombre
+		dataType: string
+		lineageTag: e3609787-f6c7-434e-82db-da099921f896
+		summarizeBy: none
+		sourceColumn: Nombre
+
+		annotation SummarizationSetBy = Automatic
+
+	column Segmento
+		dataType: string
+		lineageTag: 59df6dc2-76ac-4da1-bf76-23d34c78cd35
+		summarizeBy: none
+		sourceColumn: Segmento
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Fecha Registro'
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 0f4b46ef-a00e-42ce-bf29-6282a49a354b
+		summarizeBy: none
+		sourceColumn: Fecha Registro
+
+		variation Variation
+			isDefault
+			relationship: 4aae2913-ddea-462e-b49c-df50f9635b59
+			defaultHierarchy: LocalDateTable_1714b649-c87d-4747-94f8-13c695555ba1.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition 'public clientes' = m
+		mode: import
+		source =
+				let
+				  Origen = PostgreSQL.Database("ep-floral-sky-bece9d9r-pooler.c-9.us-east-2.aws.neon.tech", "gimnasio"),
+				  #"Navegación 1" = Origen{[Schema = "public", Item = "clientes"]}[Data],
+				  #"Columnas con nombre cambiado" = Table.RenameColumns(#"Navegación 1", {{"cliente_id", "Cliente ID"}, {"nombre", "Nombre"}, {"segmento", "Segmento"}, {"fecha_registro", "Fecha Registro"}}),
+				  #"Texto recortado" = Table.TransformColumns(#"Columnas con nombre cambiado", {{"Segmento", each Text.Trim(_), type nullable text}}),
+				  #"Texto limpio" = Table.TransformColumns(#"Texto recortado", {{"Segmento", each Text.Clean(_), type nullable text}}),
+				  #"Mayúsculas aplicadas en cada palabra" = Table.TransformColumns(#"Texto limpio", {{"Segmento", each Text.Proper(_), type nullable text}}),
+				  #"Valor reemplazado" = Table.ReplaceValue(#"Mayúsculas aplicadas en cada palabra", null, "Sin clasificar", Replacer.ReplaceValue, {"Segmento"})
+				in
+				  #"Valor reemplazado"
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,107 @@
+table 'public detalle_operacion'
+	lineageTag: 5663924d-6d6d-4b2c-ae2b-b0adcbf58711
+
+	measure 'Ventas Brutas' =
+			
+			SUMX(
+			    'public detalle_operacion',
+			    'public detalle_operacion'[Cantidad] *
+			    'public detalle_operacion'[Precio Unitario]
+			)
+		lineageTag: a0d263be-b93b-4d66-b1fa-57827dfb170b
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Total Operaciones' =
+			
+			DISTINCTCOUNT('public operaciones'[Operación ID])
+		formatString: 0
+		lineageTag: a67beb3b-2a78-4568-888f-f189b1cac53d
+
+	measure 'Clientes Activos' =
+			
+			CALCULATE(
+			    DISTINCTCOUNT('public operaciones'[Cliente ID]),
+			    NOT ISBLANK('public operaciones'[Cliente ID])
+			)
+		formatString: 0
+		lineageTag: 294d9c2a-467f-400e-98bd-aa5ca39882c9
+
+	measure 'Unidades Vendidas' =
+			
+			SUM('public detalle_operacion'[Cantidad])
+		formatString: 0
+		lineageTag: 1965b2b2-de35-4e61-a747-420db150c597
+
+	column 'Detalle ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: 7fed1ded-231a-461b-889e-a4b0f10cd1c8
+		summarizeBy: count
+		sourceColumn: Detalle ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Operación ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: 997efc62-02b3-498c-a16f-9587b0c9cc2a
+		summarizeBy: none
+		sourceColumn: Operación ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Producto ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: 7303449e-f5b4-4bae-8eb4-e889e5cc7361
+		summarizeBy: none
+		sourceColumn: Producto ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column Cantidad
+		dataType: int64
+		formatString: 0
+		lineageTag: 8e453a7d-713d-444a-a300-abed079202b6
+		summarizeBy: sum
+		sourceColumn: Cantidad
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Precio Unitario'
+		dataType: double
+		lineageTag: 0c910771-fb7a-4fea-b400-b19b8934acc2
+		summarizeBy: sum
+		sourceColumn: Precio Unitario
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Descuento
+		dataType: double
+		lineageTag: 724aceae-5ee8-46a1-9c4e-74300d286ecc
+		summarizeBy: sum
+		sourceColumn: Descuento
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition 'public detalle_operacion' = m
+		mode: import
+		source =
+				let
+				  Origen = PostgreSQL.Database("ep-floral-sky-bece9d9r-pooler.c-9.us-east-2.aws.neon.tech", "gimnasio"),
+				  #"Navegación 1" = Origen{[Schema = "public", Item = "detalle_operacion"]}[Data],
+				  #"Tipo de columna cambiado" = Table.TransformColumnTypes(#"Navegación 1", {{"detalle_id", Int64.Type}, {"operacion_id", Int64.Type}, {"producto_id", Int64.Type}, {"cantidad", Int64.Type}, {"precio_unitario", type number}, {"descuento", type number}}),
+				  #"Columnas con nombre cambiado" = Table.RenameColumns(#"Tipo de columna cambiado", {{"detalle_id", "Detalle ID"}, {"operacion_id", "Operación ID"}, {"producto_id", "Producto ID"}, {"cantidad", "Cantidad"}, {"precio_unitario", "Precio Unitario"}, {"descuento", "Descuento"}}),
+				  #"Filas filtradas" = Table.SelectRows(#"Columnas con nombre cambiado", each [Cantidad] >= 0),
+				  #"Filas filtradas 1" = Table.SelectRows(#"Filas filtradas", each [Precio Unitario] >= 0),
+				  #"Filas filtradas 2" = Table.SelectRows(#"Filas filtradas 1", each [Descuento] >= 0)
+				in
+				  #"Filas filtradas 2"
+
+	annotation PBI_ResultType = Table
+

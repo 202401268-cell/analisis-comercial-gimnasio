@@ -1,0 +1,119 @@
+table 'public operaciones'
+	lineageTag: 8fff7e83-6d0a-4d55-9a71-bbf0e4036e27
+
+	column 'Operación ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: a12a2fd6-6b3b-40b3-9ed9-953301f3510a
+		summarizeBy: none
+		sourceColumn: Operación ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Cliente ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: fb0a1a57-99db-4c12-a33e-786a61b663f5
+		summarizeBy: none
+		sourceColumn: Cliente ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Sede ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: bd0407c8-4c5b-4b83-82fb-bb49582c2583
+		summarizeBy: none
+		sourceColumn: Sede ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column Fecha
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: d8269fad-60da-4921-ad7d-3f267ad066f5
+		summarizeBy: none
+		sourceColumn: Fecha
+
+		variation Variation
+			isDefault
+			relationship: 88bc08d4-5601-434d-a898-b523f5269b00
+			defaultHierarchy: LocalDateTable_a21f9e5e-a894-4ca7-9214-c9cf615c6b46.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column Estado
+		dataType: string
+		lineageTag: c197dcf3-4bdc-47ce-b930-48a0c3f1ed55
+		summarizeBy: none
+		sourceColumn: Estado
+
+		annotation SummarizationSetBy = Automatic
+
+	column Canal
+		dataType: string
+		lineageTag: 0850e9ac-f4d3-4f2a-a996-eb947b4b0ae0
+		summarizeBy: none
+		sourceColumn: Canal
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Actualizado en'
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 75fbea33-cefd-4bdb-9ede-983b11af1aa2
+		summarizeBy: none
+		sourceColumn: Actualizado en
+
+		variation Variation
+			isDefault
+			relationship: a61af472-b7a5-4b28-aa5d-32361e98019d
+			defaultHierarchy: LocalDateTable_116c4b52-1343-4138-8938-41d2d076b1f0.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Mes y Año' =
+			
+			FORMAT(
+			    'public operaciones'[Fecha],
+			    "MMM yyyy",
+			    "es-SV"
+			)
+		lineageTag: e04273f9-7b94-4e39-9486-732a0e5ad741
+		summarizeBy: none
+		sortByColumn: 'Orden Mes'
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Orden Mes' =
+			
+			YEAR('public operaciones'[Fecha]) * 100 +
+			MONTH('public operaciones'[Fecha])
+		formatString: 0
+		lineageTag: 2183a698-d937-4a3d-91bb-475167e8dc27
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'public operaciones' = m
+		mode: import
+		source =
+				let
+				  Origen = PostgreSQL.Database("ep-floral-sky-bece9d9r-pooler.c-9.us-east-2.aws.neon.tech", "gimnasio"),
+				  #"Navegación 1" = Origen{[Schema = "public", Item = "operaciones"]}[Data],
+				  #"Tipo de columna cambiado" = Table.TransformColumnTypes(#"Navegación 1", {{"operacion_id", Int64.Type}, {"cliente_id", Int64.Type}, {"sede_id", Int64.Type}, {"estado", type text}, {"canal", type text}}),
+				  #"Columnas con nombre cambiado" = Table.RenameColumns(#"Tipo de columna cambiado", {{"operacion_id", "Operación ID"}, {"cliente_id", "Cliente ID"}, {"sede_id", "Sede ID"}, {"fecha", "Fecha"}, {"estado", "Estado"}, {"canal", "Canal"}, {"actualizado_en", "Actualizado en"}}),
+				  #"Texto limpio" = Table.TransformColumns(#"Columnas con nombre cambiado", {{"Canal", each Text.Clean(_), type nullable text}}),
+				  #"Texto recortado" = Table.TransformColumns(#"Texto limpio", {{"Canal", each Text.Trim(_), type nullable text}}),
+				  #"Mayúsculas aplicadas en cada palabra" = Table.TransformColumns(#"Texto recortado", {{"Canal", each Text.Proper(_), type nullable text}}),
+				  #"Valor reemplazado" = Table.ReplaceValue(#"Mayúsculas aplicadas en cada palabra", "App??", "Por validar", Replacer.ReplaceText, {"Canal"}),
+				  #"Valor reemplazado 1" = Table.ReplaceValue(#"Valor reemplazado", "??", "Por validar", Replacer.ReplaceText, {"Canal"}),
+				  #"Valor reemplazado 2" = Table.ReplaceValue(#"Valor reemplazado 1", "N/A", "Sin especificar", Replacer.ReplaceText, {"Canal"}),
+				  #"Valor reemplazado 3" = Table.ReplaceValue(#"Valor reemplazado 2", "(En blanco)", "Sin especificar", Replacer.ReplaceText, {"Canal"})
+				in
+				  #"Valor reemplazado 3"
+
+	annotation PBI_ResultType = Table
+

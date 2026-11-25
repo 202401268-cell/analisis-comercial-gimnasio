@@ -1,0 +1,62 @@
+table 'public catalogo'
+	lineageTag: b3b074de-58a0-4640-b0c7-015391ea58aa
+
+	measure 'Importe Completado' =
+			
+			CALCULATE(
+			    [Ventas Brutas],
+			    FILTER(
+			        'public operaciones',
+			        UPPER(TRIM('public operaciones'[Estado])) = "COMPLETADA"
+			    )
+			)
+		lineageTag: 6c6bd168-ab6d-4fc1-a42b-15717df4c063
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column producto_id
+		dataType: int64
+		formatString: 0
+		lineageTag: f6887628-e09e-4740-a8e4-a3f8ab5920b2
+		summarizeBy: none
+		sourceColumn: producto_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column nombre
+		dataType: string
+		lineageTag: 59cf932d-eac4-4c9e-ba34-09210ce17e2e
+		summarizeBy: none
+		sourceColumn: nombre
+
+		annotation SummarizationSetBy = Automatic
+
+	column categoria
+		dataType: string
+		lineageTag: e16135ac-d945-4df6-98f7-325f9be7f07a
+		summarizeBy: none
+		sourceColumn: categoria
+
+		annotation SummarizationSetBy = Automatic
+
+	column precio_lista
+		dataType: double
+		lineageTag: 007421c3-8c3b-4b04-bbe5-225da3fe6b6a
+		summarizeBy: none
+		sourceColumn: precio_lista
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition 'public catalogo' = m
+		mode: import
+		source =
+				let
+				  Origen = PostgreSQL.Database("ep-floral-sky-bece9d9r-pooler.c-9.us-east-2.aws.neon.tech", "gimnasio"),
+				  #"Navegación 1" = Origen{[Schema = "public", Item = "catalogo"]}[Data]
+				in
+				  #"Navegación 1"
+
+	annotation PBI_ResultType = Table
+

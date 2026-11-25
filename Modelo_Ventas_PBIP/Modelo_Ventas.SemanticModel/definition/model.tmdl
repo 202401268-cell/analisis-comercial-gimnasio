@@ -1,0 +1,26 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: es-ES
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_QueryOrder = ["public catalogo","public clientes","public detalle_operacion","public operaciones","public sedes"]
+
+annotation __LastRPTime = 134399691771686725
+
+annotation PBI_ProTooling = ["WebModelingEdit","DevMode"]
+
+ref table 'public catalogo'
+ref table 'public clientes'
+ref table DateTableTemplate_1a8d67f3-1226-44dd-a59c-972eb72c4231
+ref table LocalDateTable_1714b649-c87d-4747-94f8-13c695555ba1
+ref table 'public detalle_operacion'
+ref table 'public operaciones'
+ref table LocalDateTable_a21f9e5e-a894-4ca7-9214-c9cf615c6b46
+ref table LocalDateTable_116c4b52-1343-4138-8938-41d2d076b1f0
+ref table 'public sedes'
+
